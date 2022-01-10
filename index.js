@@ -17,33 +17,35 @@ const getInputs = () => {
 		const applicationNamespace = getInput("applicationNamespace") || "default"
 		const applicationProject = getInput("applicationProject")
 		const applicationParams = getInput("applicationParams")
+		const applicationHelmValues = getInput("applicationHelmValues")
 
 		// Others
-		const maxRetry = getInput("maxRetry") || "5"
-		const tts = getInput("tts") || "10"
-		const destClusterName = getInput("destClusterName")
+		const maxRetry = getInput("maxRetry") || "10"
+		const tts = getInput("tts") || "60"
+		const destClusterName = getInput("destClusterName") || "in-cluster"
+		const destClusterServer = getInput("destClusterServer") || "https://kubernetes.default.svc"
 		const doSync = getBooleanInput("doSync")
 		const onlySync = getBooleanInput("onlySync")
 
 		if (
 			(action == "create" || action == "update") &&
-			(applicationParams == ""
-				|| destClusterName == ""
-				|| helmChartName == ""
+			( helmChartName == ""
 				|| helmChartVersion == ""
 				|| helmRepoUrl == "")
 		) {
-			throw new Error(`You must also provide (applicationParams, destClusterName, helmChartName, helmChartVersion, helmRepoUrl) inputs when using ${action} action`)
+			throw new Error(`You must also provide ( helmChartName, helmChartVersion, helmRepoUrl) inputs when using ${action} action`)
 		}
 
 		return {
 			token,
 			endpoint,
 			destClusterName,
+			destClusterServer,
 			applicationName,
 			applicationNamespace,
 			applicationProject,
 			applicationParams,
+			applicationHelmValues,
 			helmChartName,
 			helmChartVersion,
 			helmRepoUrl,
@@ -145,22 +147,32 @@ const generateSpecs = (inputs = getInputs()) => {
 	return {
 		metadata: {
 			name: inputs.applicationName,
-			namespace: "default"
+			namespace: "argocd",
+			finalizers: [ "resources-finalizer.argocd.argoproj.io" ]
 		},
 		spec: {
 			source: {
 				repoURL: inputs.helmRepoUrl,
 				targetRevision: inputs.helmChartVersion,
 				helm: {
+					valueFiles: inputs.applicationHelmValues.split(";"),
 					parameters: helmParameters
 				},
 				chart: inputs.helmChartName
 			},
 			destination: {
-				name: inputs.destClusterName, namespace: inputs.applicationNamespace
+				server: inputs.destClusterServer, namespace: inputs.applicationNamespace
 			},
 			project: inputs.applicationProject,
-			syncPolicy: {}
+			syncPolicy: {
+				automated: {
+					prune: true
+				},
+				syncOptions: [
+					"PruneLast=true",
+					"CreateNamespace=true"
+				  ]
+			}
 		}
 	}
 }

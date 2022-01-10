@@ -19,12 +19,18 @@ inputs:
   destClusterName:
     description: "Destination cluster name"
     required: false
+  destClusterServer:
+    description: "Destination cluster server"
+    required: false
   applicationProject:
     description: "Project name where application should be deployed"
     required: false
     default: ""
   applicationParams:
     description: "Helm parameters of the application to create/update in format 'name=value;name=value;...'"
+    required: false
+  applicationHelmValues:
+    description: "Helm value files 'valueFile1;valueFile2;...'"
     required: false
   applicationNamespace:
     description: "Namespace when application is/will be deployed"
@@ -42,15 +48,15 @@ inputs:
   maxRetry:
     description: "Max retry of the ArgoCD application creation"
     required: false
-    default: "5"
+    default: "10"
   tts:
     description: "Time To Sleep before each application status check"
-    default: "10"
+    default: "60"
     required: false
   doSync:
     description: "Do the action also sync at the end"
     required: false
-    default: "true"
+    default: "false"
   onlySync:
     required: false
     default: "false"

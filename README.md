@@ -7,7 +7,9 @@ GithubAction which handle base CRUD on given application name
 ###  `argocdEndpoint`
  **Required** Entrypoint of ArgoCD applicatin (e.g https://argocd.example.com).
 ###  `destClusterName`
-**Required** Destination cluster name.
+ Destination cluster name.
+###  `destClusterSever`
+ Destination cluster server.
 ###  `applicationName`
 **Required** Name of the application to create/update/delete.
 ###  `helmChartName`
