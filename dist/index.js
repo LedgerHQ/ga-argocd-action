@@ -8688,7 +8688,7 @@ const main = () => {
 			return
 	}
 	if (prom != null) {
-		return prom.delay(3000).then(() => inputs.doSync ? syncApplication(inputs) : prom)
+		return prom.then(() => inputs.doSync ? syncApplication(inputs) : prom)
 	}
 }
 
