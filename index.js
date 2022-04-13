@@ -20,8 +20,8 @@ const getInputs = () => {
 		const applicationHelmValues = getInput("applicationHelmValues")
 
 		// Others
-		const maxRetry = getInput("maxRetry") || "10"
-		const tts = getInput("tts") || "60"
+		const maxRetry = getInput("maxRetry") || "60"
+		const tts = getInput("tts") || "10"
 		const destClusterName = getInput("destClusterName") || "in-cluster"
 		const destClusterServer = getInput("destClusterServer") || "https://kubernetes.default.svc"
 		const doSync = getBooleanInput("doSync") || true

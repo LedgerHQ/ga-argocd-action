@@ -48,10 +48,10 @@ inputs:
   maxRetry:
     description: "Max retry of the ArgoCD application creation"
     required: false
-    default: "10"
+    default: "60"
   tts:
     description: "Time To Sleep before each application status check"
-    default: "60"
+    default: "10"
     required: false
   doSync:
     description: "Do the action also sync at the end"
