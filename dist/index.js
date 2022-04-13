@@ -8511,17 +8511,16 @@ const getInputs = () => {
 		const tts = getInput("tts") || "60"
 		const destClusterName = getInput("destClusterName") || "in-cluster"
 		const destClusterServer = getInput("destClusterServer") || "https://kubernetes.default.svc"
-		const doSync = getBooleanInput("doSync")
+		const doSync = getBooleanInput("doSync") || true
 		const onlySync = getBooleanInput("onlySync")
 
 		if (
 			(action == "create" || action == "update") &&
-			(applicationParams == ""
-				|| helmChartName == ""
+			( helmChartName == ""
 				|| helmChartVersion == ""
 				|| helmRepoUrl == "")
 		) {
-			throw new Error(`You must also provide (applicationParams, helmChartName, helmChartVersion, helmRepoUrl) inputs when using ${action} action`)
+			throw new Error(`You must also provide ( helmChartName, helmChartVersion, helmRepoUrl) inputs when using ${action} action`)
 		}
 
 		return {
@@ -8689,7 +8688,7 @@ const main = () => {
 			return
 	}
 	if (prom != null) {
-		return prom.then(() => inputs.doSync ? syncApplication(inputs) : prom)
+		return prom.delay(3000).then(() => inputs.doSync ? syncApplication(inputs) : prom)
 	}
 }
 

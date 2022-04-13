@@ -56,7 +56,7 @@ inputs:
   doSync:
     description: "Do the action also sync at the end"
     required: false
-    default: "false"
+    default: "true"
   onlySync:
     required: false
     default: "false"

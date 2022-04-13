@@ -24,7 +24,7 @@ const getInputs = () => {
 		const tts = getInput("tts") || "60"
 		const destClusterName = getInput("destClusterName") || "in-cluster"
 		const destClusterServer = getInput("destClusterServer") || "https://kubernetes.default.svc"
-		const doSync = getBooleanInput("doSync")
+		const doSync = getBooleanInput("doSync") || true
 		const onlySync = getBooleanInput("onlySync")
 
 		if (
@@ -201,7 +201,7 @@ const main = () => {
 			return
 	}
 	if (prom != null) {
-		return prom.then(() => inputs.doSync ? syncApplication(inputs) : prom)
+		return prom.delay(3000).then(() => inputs.doSync ? syncApplication(inputs) : prom)
 	}
 }
 
