@@ -8580,9 +8580,18 @@ const checkResponse = (response) => {
 	throw new Error(`${response.url} ${response.statusText}`);
 }
 
+const checkSyncResponse = (response) => {
+	info(`Response from ${response.url} [${response.status}] ${response.statusText}`)
+
+	if ((response.status >= 200 && response.status < 300 )|| response.status == 400) {
+		return response;
+	}
+	throw new Error(`${response.url} ${response.statusText}`);
+}
+
 const syncApplication = (inputs = getInputs()) => {
 	return fetch.default(`${inputs.endpoint}/api/v1/applications/${inputs.applicationName}/sync`, generateOpts("post", inputs.token, null))
-		.then(checkResponse)
+		.then(checkSyncResponse)
 		.then(() => checkReady(inputs))
 		.catch(err => setFailed(err.message))
 }
