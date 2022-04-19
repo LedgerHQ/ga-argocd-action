@@ -36,6 +36,15 @@ inputs:
     description: "Namespace when application is/will be deployed"
     required: false
     default: "default"
+  gitRepoUrl:
+    description: "Git repository which holds application chart"
+    required: false
+  gitRepoPath:
+    description: "Git repository  Path which holds application chart"
+    required: false
+  gitTargetRevision:
+    description: "Git Repo Revision"
+    required: false
   helmChartName:
     description: "Name of Helm chart to apply"
     required: false

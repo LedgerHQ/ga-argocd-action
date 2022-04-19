@@ -8495,6 +8495,11 @@ const getInputs = () => {
 		const endpoint = getInput("argocdEndpoint", { required: true })
 		const applicationName = getInput("applicationName", { required: true })
 
+		//Git values
+		const gitRepoUrl = getInput("gitRepoUrl")
+		const gitRepoPath = getInput("gitRepoPath")
+		const gitTargetRevision = getInput("gitTargetRevision")
+
 		//Helm values
 		const helmRepoUrl = getInput("helmRepoUrl")
 		const helmChartVersion = getInput("helmChartVersion")
@@ -8515,12 +8520,14 @@ const getInputs = () => {
 		const onlySync = getBooleanInput("onlySync")
 
 		if (
-			(action == "create" || action == "update") &&
-			( helmChartName == ""
-				|| helmChartVersion == ""
-				|| helmRepoUrl == "")
+			(action == "create" || action == "update") && 
+				( helmChartName == ""
+					|| helmChartVersion == ""
+					|| helmRepoUrl == "") && 
+				gitRepoUrl == ""
+			    
 		) {
-			throw new Error(`You must also provide ( helmChartName, helmChartVersion, helmRepoUrl) inputs when using ${action} action`)
+			throw new Error(`You must also provide ( gitRepoUrl or helmRepoUrl, helmChartName, helmChartVersion ) inputs when using ${action} action`)
 		}
 
 		return {
@@ -8583,7 +8590,16 @@ const checkResponse = (response) => {
 const checkSyncResponse = (response) => {
 	info(`Response from ${response.url} [${response.status}] ${response.statusText}`)
 
-	if ((response.status >= 200 && response.status < 300 )|| response.status == 400) {
+	if ((response.status >= 200 && response.status < 300 ) || response.status == 400) {
+		return response;
+	}
+	throw new Error(`${response.url} ${response.statusText}`);
+}
+
+const checkDeleteResponse = (response) => {
+	info(`Response from ${response.url} [${response.status}] ${response.statusText}`)
+
+	if ((response.status >= 200 && response.status < 300 ) || (response.status == 400 || response.status == 404)) {
 		return response;
 	}
 	throw new Error(`${response.url} ${response.statusText}`);
@@ -8599,11 +8615,12 @@ const syncApplication = (inputs = getInputs()) => {
 const createApplication = (inputs = getInputs()) => {
 	specs = generateSpecs(inputs)
 	info(`[CREATE] Sending request to ${inputs.endpoint}/api/v1/applications`)
+	info(`[CREATE] Spec: ${specs}`)
 	return fetch.default(`${inputs.endpoint}/api/v1/applications`, generateOpts("post", inputs.token, specs))
 		.then(checkResponse)
 		.then(r => r.json())
 		.then(jsonObj => setOutput("application", JSON.stringify(jsonObj)))
-		.catch(err => setFailed(err))
+		.catch(err => setFailed( err ))
 }
 
 const readApplication = (inputs = getInputs()) => {
@@ -8626,7 +8643,7 @@ const updateApplication = (inputs = getInputs()) => {
 const deleteApplication = (inputs = getInputs()) => {
 	info(`[DELETE] Sending request to ${inputs.endpoint}/api/v1/applications/${inputs.applicationName}`)
 	return fetch.default(`${inputs.endpoint}/api/v1/applications/${inputs.applicationName}`, generateOpts("delete", inputs.token, null))
-		.then(checkResponse)
+		.then(checkDeleteResponse)
 		.then(() => setOutput("application", JSON.stringify({ deleted: true })))
 		.catch(err => setFailed(err))
 }
@@ -8640,6 +8657,21 @@ const parseApplicationParams = (appParams = "") => {
 
 const generateSpecs = (inputs = getInputs()) => {
 	helmParameters = parseApplicationParams(inputs.applicationParams)
+	const   source = {
+		       helm: {
+		               valueFiles: inputs.applicationHelmValues.split(";"),
+		               parameters: helmParameters
+	                }
+            }
+	if (inputs.gitRepoUrl != "") {
+			source.repoURL = inputs.gitRepoUrl 
+			source.path =  inputs.gitRepoPath || "."
+			source.targetRevision = inputs.gitTargetRevision || "HEAD"
+	} else {
+			source.repoURL = inputs.helmRepoUrl
+			source.chart = input.helmChartName
+			source.targetRevision = inputs.helmChartVersion
+	}
 	return {
 		metadata: {
 			name: inputs.applicationName,
@@ -8647,15 +8679,7 @@ const generateSpecs = (inputs = getInputs()) => {
 			finalizers: [ "resources-finalizer.argocd.argoproj.io" ]
 		},
 		spec: {
-			source: {
-				repoURL: inputs.helmRepoUrl,
-				targetRevision: inputs.helmChartVersion,
-				helm: {
-					valueFiles: inputs.applicationHelmValues.split(";"),
-					parameters: helmParameters
-				},
-				chart: inputs.helmChartName
-			},
+			source: source,
 			destination: {
 				server: inputs.destClusterServer, namespace: inputs.applicationNamespace
 			},
