@@ -128,7 +128,7 @@ const syncApplication = (inputs = getInputs()) => {
 const createApplication = (inputs = getInputs()) => {
 	specs = generateSpecs(inputs)
 	info(`[CREATE] Sending request to ${inputs.endpoint}/api/v1/applications`)
-	info(JSON.stringify(spec, null, 2) )
+	info(JSON.stringify(specs, null, 2) )
 	return fetch.default(`${inputs.endpoint}/api/v1/applications`, generateOpts("post", inputs.token, specs))
 		.then(checkResponse)
 		.then(r => r.json())
