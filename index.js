@@ -177,7 +177,7 @@ const generateSpecs = (inputs = getInputs()) => {
 	                }
             }
 	if (inputs.gitRepoUrl != "") {
-			source.repoURL = inputs.gitRepoUrl 
+			source.repoURL = inputs.gitRepoUrl
 			source.path =  inputs.gitRepoPath || "."
 			source.targetRevision = inputs.gitTargetRevision || "HEAD"
 	} else {
