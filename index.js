@@ -25,8 +25,8 @@ const getInputs = () => {
 		const applicationHelmValues = getInput("applicationHelmValues")
 
 		// Others
-		const maxRetry = getInput("maxRetry") || "60"
-		const tts = getInput("tts") || "10"
+		const maxRetry = getInput("maxRetry") || "30"
+		const tts = getInput("tts") || "20"
 		const destClusterName = getInput("destClusterName") || "in-cluster"
 		const destClusterServer = getInput("destClusterServer") || "https://kubernetes.default.svc"
 		const doSync = getBooleanInput("doSync") || true
@@ -96,20 +96,20 @@ const checkReady = (inputs = getInputs(), retry = inputs.maxRetry) => {
 }
 
 const checkResponse = (response) => {
-	info(`Response from ${response.url} [${response.status}] ${response.statusText}`)
+	info(`Response from  ${inputs.endpoint}/applications/${inputs.applicationName} [${response.status}] ${response.statusText}`)
 	if (response.status >= 200 && response.status < 300) {
 		return response;
 	}
-	throw new Error(`${response.url} ${response.statusText}`);
+	throw new Error(` ${inputs.endpoint}/applications/${inputs.applicationName} ${response.statusText}`);
 }
 
 const checkSyncResponse = (response) => {
-	info(`Response from ${response.url} [${response.status}] ${response.statusText}`)
+	info(`Response from  ${inputs.endpoint}/applications/${inputs.applicationName} [${response.status}] ${response.statusText}`)
 
 	if ((response.status >= 200 && response.status < 300 ) || response.status == 400) {
 		return response;
 	}
-	throw new Error(`${response.url} ${response.statusText}`);
+	throw new Error(` ${inputs.endpoint}/applications/${inputs.applicationName} ${response.statusText}`);
 }
 
 const checkDeleteResponse = (response) => {
@@ -131,7 +131,6 @@ const syncApplication = (inputs = getInputs()) => {
 const createApplication = (inputs = getInputs()) => {
 	specs = generateSpecs(inputs)
 	info(`[CREATE] Sending request to ${inputs.endpoint}/api/v1/applications`)
-	info(JSON.stringify(specs, null, 2) )
 	return fetch.default(`${inputs.endpoint}/api/v1/applications`, generateOpts("post", inputs.token, specs))
 		.then(checkResponse)
 		.then(r => r.json())
